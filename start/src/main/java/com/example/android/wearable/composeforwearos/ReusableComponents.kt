@@ -1,216 +1,147 @@
-/*
- * Copyright 2021 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.example.android.wearable.composeforwearos
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Message
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
-import androidx.wear.compose.material3.AppScaffold
-import androidx.wear.compose.material3.Button
-import androidx.wear.compose.material3.ScreenScaffold
-import androidx.wear.compose.material3.Text
+import androidx.wear.compose.material3.*
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.android.wearable.composeforwearos.theme.WearAppTheme
 import com.google.android.horologist.compose.layout.ColumnItemType
 import com.google.android.horologist.compose.layout.rememberResponsiveColumnPadding
 
-/* Contains individual Wear OS demo composables for the code lab. */
-
-// TODO: Create a Icon Button Composable
 @Composable
-fun IconButtonExample(
-    modifier: Modifier = Modifier,
-) {
+fun IconButtonExample(modifier: Modifier = Modifier) {
+    FilledIconButton(
+        onClick = { /* Acción futura */ },
+        modifier = modifier,
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Notifications,
+            contentDescription = "Ver notificaciones",
+        )
+    }
 }
 
-// TODO: Create a Text Composable
 @Composable
-fun TextExample(modifier: Modifier = Modifier) {
+fun TextExample(modifier: Modifier = Modifier, transformation: SurfaceTransformation) {
+    ListHeader(
+        modifier = modifier,
+        transformation = transformation,
+    ) {
+        Text(
+            modifier = modifier,
+            textAlign = TextAlign.Center,
+            text = "Bienvenido al sistema de notificaciones del CRESPF",
+        )
+    }
 }
 
-// TODO: Create a Card (specifically, an AppCard) Composable
 @Composable
 fun CardExample(
     modifier: Modifier = Modifier,
     iconModifier: Modifier = Modifier,
+    transformation: SurfaceTransformation,
 ) {
+    AppCard(
+        modifier = modifier,
+        transformation = transformation,
+        appImage = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.Message,
+                contentDescription = "Abrir mensaje",
+                modifier = iconModifier,
+            )
+        },
+        appName = { Text("CRESPF") },
+        time = { Text("Hace 5 min") },
+        title = { Text("Secretaría Académica") },
+        onClick = { /* Detalles */ },
+    ) {
+        Text("Nueva convocatoria para becas 2025 disponible.")
+    }
 }
 
-// TODO: Create a Chip Composable
 @Composable
-fun ChipExample(
-    modifier: Modifier = Modifier,
-) {
+fun ChipExample(modifier: Modifier = Modifier, transformation: SurfaceTransformation) {
+    Button(
+        modifier = modifier,
+        transformation = transformation,
+        onClick = { /* limpiar alertas */ },
+        icon = {
+            Icon(
+                imageVector = Icons.Rounded.Delete,
+                contentDescription = "Limpiar alertas",
+            )
+        },
+    ) {
+        Text(
+            text = "Limpiar alertas",
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
 }
 
-// TODO: Create a Chip with a switch Composable
 @Composable
-fun SwitchChipExample(modifier: Modifier = Modifier) {
+fun SwitchChipExample(modifier: Modifier = Modifier, transformation: SurfaceTransformation) {
+    var checked by remember { mutableStateOf(true) }
+    SwitchButton(
+        modifier = modifier,
+        label = {
+            Text(
+                "Recibir alertas",
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.semantics {
+                    this.contentDescription = if (checked) "Activadas" else "Desactivadas"
+                },
+            )
+        },
+        checked = checked,
+        onCheckedChange = { checked = it },
+        enabled = true,
+    )
 }
 
-// Function only used as a demo for when you start the code lab (removed as step 1).
+@Composable
+fun HighPrioritySwitchExample(modifier: Modifier = Modifier, transformation: SurfaceTransformation) {
+    var highPriorityOnly by remember { mutableStateOf(false) }
+    SwitchButton(
+        modifier = modifier,
+        label = {
+            Text(
+                "Solo de alta prioridad",
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.semantics {
+                    this.contentDescription =
+                        if (highPriorityOnly) "Activado" else "Desactivado"
+                },
+            )
+        },
+        checked = highPriorityOnly,
+        onCheckedChange = { highPriorityOnly = it },
+        enabled = true,
+    )
+}
+
 @Composable
 fun StartOnlyTextComposables() {
     Text(
         modifier = Modifier.fillMaxSize(),
         textAlign = TextAlign.Center,
-        text = stringResource(R.string.hello_world_starter),
+        color = MaterialTheme.colorScheme.primary,
+        text = "Notificaciones CRESPF",
     )
-}
-
-// Hello, world starter text preview
-@WearPreviewDevices
-@Composable
-fun StartOnlyTextComposablesPreview() {
-    WearAppTheme {
-        AppScaffold {
-            val listState = rememberTransformingLazyColumnState()
-            val contentPadding =
-                rememberResponsiveColumnPadding(first = ColumnItemType.BodyText)
-            ScreenScaffold(
-                scrollState = listState,
-                contentPadding = contentPadding,
-            ) { contentPadding ->
-                TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
-                    item {
-                        StartOnlyTextComposables()
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Button Preview
-@WearPreviewDevices
-@Composable
-fun ButtonExamplePreview() {
-    WearAppTheme {
-        AppScaffold {
-            val listState = rememberTransformingLazyColumnState()
-            val contentPadding =
-                rememberResponsiveColumnPadding(first = ColumnItemType.IconButton)
-            ScreenScaffold(
-                scrollState = listState,
-                contentPadding = contentPadding,
-            ) { contentPadding ->
-                TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
-                    item {
-                        IconButtonExample()
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Text Preview
-@WearPreviewDevices
-@Composable
-fun TextExamplePreview() {
-    WearAppTheme {
-        AppScaffold {
-            val listState = rememberTransformingLazyColumnState()
-            val contentPadding =
-                rememberResponsiveColumnPadding(first = ColumnItemType.BodyText)
-            ScreenScaffold(
-                scrollState = listState,
-                contentPadding = contentPadding,
-            ) { contentPadding ->
-                TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
-                    item {
-                        TextExample()
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Card Preview
-@WearPreviewDevices
-@Composable
-fun CardExamplePreview() {
-    WearAppTheme {
-        AppScaffold {
-            val listState = rememberTransformingLazyColumnState()
-            val contentPadding =
-                rememberResponsiveColumnPadding(first = ColumnItemType.Card)
-            ScreenScaffold(
-                scrollState = listState,
-                contentPadding = contentPadding,
-            ) { contentPadding ->
-                TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
-                    item {
-                        CardExample()
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Chip Preview
-@WearPreviewDevices
-@Composable
-fun ChipPreview() {
-    WearAppTheme {
-        AppScaffold {
-            val listState = rememberTransformingLazyColumnState()
-            val contentPadding =
-                rememberResponsiveColumnPadding(first = ColumnItemType.Button)
-            ScreenScaffold(
-                scrollState = listState,
-                contentPadding = contentPadding,
-            ) { contentPadding ->
-                TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
-                    item {
-                        ChipExample()
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Switch Chip Preview
-@WearPreviewDevices
-@Composable
-fun SwitchChipExamplePreview() {
-    WearAppTheme {
-        AppScaffold {
-            val listState = rememberTransformingLazyColumnState()
-            val contentPadding =
-                rememberResponsiveColumnPadding(first = ColumnItemType.Button)
-            ScreenScaffold(
-                scrollState = listState,
-                contentPadding = contentPadding,
-            ) { contentPadding ->
-                TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
-                    item {
-                        SwitchChipExample()
-                    }
-                }
-            }
-        }
-    }
 }

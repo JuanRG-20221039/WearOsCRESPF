@@ -29,4 +29,3 @@ val WearAppTypography = Typography(
         fontSize = 16.sp
     )
 )
-
