@@ -3,31 +3,20 @@ package com.example.android.wearable.composeforwearos
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.wear.compose.material3.MaterialTheme
-import com.example.android.wearable.composeforwearos.theme.WearAppTheme
-import androidx.wear.compose.material.Text
-import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.Canvas
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.drawscope.Stroke
-import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.*
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
+import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
+import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
+import androidx.wear.compose.material3.*
+import androidx.wear.compose.material3.lazy.rememberTransformationSpec
+import androidx.wear.compose.material3.lazy.transformedHeight
+import com.example.android.wearable.composeforwearos.theme.WearAppTheme
+import com.google.android.horologist.compose.layout.ColumnItemType
+import com.google.android.horologist.compose.layout.rememberResponsiveColumnPadding
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,96 +30,119 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun WearApp() {
     WearAppTheme {
-        WatchFace()
-    }
-}
+        var isLoggedIn by remember { mutableStateOf(false) }
+        var code by remember { mutableStateOf("123456") } // Código simulado
+        var error by remember { mutableStateOf(false) }
 
-fun getCurrentTime(): String {
-    val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-    return sdf.format(Date())
-}
-
-@Composable
-fun WatchFace() {
-    // Tamaño del contorno
-    val borderThickness = 6.dp
-    val circleSize = 180.dp // Ajusta según el reloj
-
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-    ) {
-        // Círculo con borde degradado
-        Canvas(modifier = Modifier.size(circleSize)) {
-            // Access toPx() here, within the DrawScope
-            val strokeWidthPx = borderThickness.toPx()
-            drawCircle(
-                brush = Brush.sweepGradient(
-                    listOf(
-                        Color.Green, // Replace with your actual GreenStrong
-                        Color.DarkGray, // Replace with your actual GreenDark
-                        Color.Yellow, // Replace with your actual YellowVibrant
-                        Color.White,  // Replace with your actual YellowLight
-                        Color.Red,    // Replace with your actual ErrorRed
-                        Color.Green  // Replace with your actual GreenStrong
-                    )
-                ),
-                style = Stroke(width = strokeWidthPx)
-            )
-        }
-
-        // Contenido dentro del círculo
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .size(circleSize - borderThickness * 2) // Reducir para no solapar el borde
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "Logo CRESPF",
-                modifier = Modifier.size(64.dp),
-                contentScale = ContentScale.Fit
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            val currentTime = remember { mutableStateOf(getCurrentTime()) }
-
-            LaunchedEffect(Unit) {
-                while (true) {
-                    currentTime.value = getCurrentTime()
-                    delay(1000L) // 1 segundo
+        if (!isLoggedIn) {
+            ScreenScaffold {
+                ScalingLazyColumn {
+                    item {
+                        Text(
+                            text = "Ingresa el codigo",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
+                    item {
+                        Text(
+                            text = "Código: $code",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    item {
+                        Button(
+                            onClick = {
+                                if (code.length == 6 && code.all { it.isDigit() }) {
+                                    isLoggedIn = true
+                                    error = false
+                                } else {
+                                    error = true
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("              Login")
+                        }
+                    }
+                    if (error) {
+                        item {
+                            Text(
+                                text = "Código inválido",
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
+        } else {
+            AppScaffold {
+                val listState = rememberTransformingLazyColumnState()
+                val transformationSpec = rememberTransformationSpec()
 
-            Text(
-                text = currentTime.value,
-                style = MaterialTheme.typography.displayLarge,
-                color = Color.White,
-                fontSize = 20.sp, // Ajusta el tamaño de la fuente según tus preferencias
-            )
+                ScreenScaffold(
+                    scrollState = listState,
+                    contentPadding = rememberResponsiveColumnPadding(
+                        first = ColumnItemType.IconButton,
+                        last = ColumnItemType.Button,
+                    )
+                ) { contentPadding ->
 
-            Text(
-                text = "En esta vida no solo los talentos son los que triunfan, también las voluntades",
-                style = MaterialTheme.typography.titleSmall.copy(
-                    fontSize = 7.sp,
-                    lineHeight = 10.sp
-                ),
-                color = Color.White,
-                fontStyle = FontStyle.Italic,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
-            )
+                    TransformingLazyColumn(
+                        state = listState,
+                        contentPadding = contentPadding,
+                    ) {
+                        item {
+                            IconButtonExample()
+                        }
+                        item {
+                            TextExample(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .transformedHeight(this, transformationSpec),
+                                transformation = SurfaceTransformation(transformationSpec),
+                            )
+                        }
+                        item {
+                            CardExample(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .transformedHeight(this, transformationSpec),
+                                transformation = SurfaceTransformation(transformationSpec),
+                            )
+                        }
+                        item {
+                            ChipExample(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .transformedHeight(this, transformationSpec),
+                                transformation = SurfaceTransformation(transformationSpec),
+                            )
+                        }
+                        item {
+                            SwitchChipExample(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .transformedHeight(this, transformationSpec),
+                                transformation = SurfaceTransformation(transformationSpec),
+                            )
+                        }
+                        item {
+                            HighPrioritySwitchExample(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .transformedHeight(this, transformationSpec),
+                                transformation = SurfaceTransformation(transformationSpec),
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
-
-// Define your colors if they are not already defined elsewhere
-val GreenStrong = Color(0xFF008000) // Example color
-val GreenDark = Color(0xFF006400)   // Example color
-val YellowVibrant = Color(0xFFFFFF00) // Example color
-val YellowLight = Color(0xFFFFFFE0) // Example color
-val ErrorRed = Color(0xFFFF0000)    // Example color
