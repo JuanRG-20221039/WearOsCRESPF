@@ -81,6 +81,18 @@ fun WearApp() {
                 }
             }
         } else {
+            // 🔌 Instancia del servicio
+            val notifyService = remember { crearNotifyService() }
+
+            // 📦 Estado para cargar datos desde la API
+            val notificaciones by produceState<List<Notificacion>?>(initialValue = null) {
+                value = try {
+                    notifyService.obtenerNotificaciones()
+                } catch (e: Exception) {
+                    emptyList() // o null si quieres mostrar error
+                }
+            }
+
             AppScaffold {
                 val listState = rememberTransformingLazyColumnState()
                 val transformationSpec = rememberTransformationSpec()
@@ -97,48 +109,37 @@ fun WearApp() {
                         state = listState,
                         contentPadding = contentPadding,
                     ) {
-                        item {
-                            IconButtonExample()
-                        }
-                        item {
-                            TextExample(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .transformedHeight(this, transformationSpec),
-                                transformation = SurfaceTransformation(transformationSpec),
-                            )
-                        }
-                        item {
-                            CardExample(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .transformedHeight(this, transformationSpec),
-                                transformation = SurfaceTransformation(transformationSpec),
-                            )
-                        }
-                        item {
-                            ChipExample(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .transformedHeight(this, transformationSpec),
-                                transformation = SurfaceTransformation(transformationSpec),
-                            )
-                        }
-                        item {
-                            SwitchChipExample(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .transformedHeight(this, transformationSpec),
-                                transformation = SurfaceTransformation(transformationSpec),
-                            )
-                        }
-                        item {
-                            HighPrioritySwitchExample(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .transformedHeight(this, transformationSpec),
-                                transformation = SurfaceTransformation(transformationSpec),
-                            )
+                        if (notificaciones == null) {
+                            // ⏳ Mientras carga
+                            item {
+                                Text(
+                                    text = "Cargando notificaciones...",
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        } else if (notificaciones!!.isEmpty()) {
+                            // ⚠️ Si no hay notificaciones o falló
+                            item {
+                                Text(
+                                    text = "No hay notificaciones.",
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        } else {
+                            // ✅ Mostrar cada notificación como Card
+                            notificaciones!!.forEach { noti ->
+                                item {
+                                    Card(
+                                        onClick = { /* Acción opcional */ },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(noti.titulo, style = MaterialTheme.typography.titleMedium)
+                                        Text(noti.resumen, style = MaterialTheme.typography.bodyMedium)
+                                    }
+                                }
+                            }
                         }
                     }
                 }

@@ -68,6 +68,10 @@ android {
 dependencies {
     val composeBom = platform(libs.androidx.compose.bom)
 
+    // Para hacer peticiones HTTP
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
     // General compose dependencies
     implementation(composeBom)
     implementation(libs.androidx.activity.compose)
