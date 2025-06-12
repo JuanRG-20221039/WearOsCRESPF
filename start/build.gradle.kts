@@ -66,6 +66,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.material3.android)
     val composeBom = platform(libs.androidx.compose.bom)
 
     // Para hacer peticiones HTTP
