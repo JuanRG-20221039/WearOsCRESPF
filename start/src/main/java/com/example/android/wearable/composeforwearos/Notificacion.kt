@@ -11,5 +11,7 @@ data class Notificacion(
     val tipo: String,
     val createdAt: String,
     val updatedAt: String,
-    val fechaExpiracion: String
+    val fechaExpiracion: String,
+    val prioridad: String
+
 )
